@@ -13,6 +13,58 @@
 #define MATRIX_DETERM 2000
 #define NUM_OF_PERMUT 300
 
+void generate_array(bool compare, int argc, char** argv){
+
+    bool* used_elems = nullptr;
+    std::ofstream data_file;
+    long range = DATA_RANGE, count_of_itter = NUM_OF_ITER, cur_num = 0, counter = 0;
+
+    if (argc > 3){
+
+        data_file.open(argv[1]);
+        range = atoi(argv[2]);
+        count_of_itter = atoi(argv[3]);
+    } else{
+
+        data_file.open("new_data.txt");
+    }
+
+    if (compare == true){
+
+        used_elems = new bool[range];
+    }
+
+    std::mt19937 mersenne(static_cast<unsigned int>(time(0))); 
+
+    for (int i = 0; i < count_of_itter; i++){
+
+        cur_num = mersenne() % range;
+
+        if (compare == true){
+
+            if (!used_elems[cur_num]){
+
+                data_file << cur_num << '\n';
+                counter++;
+                used_elems[cur_num] = true;
+            }
+        } else{
+
+            data_file << cur_num << ' ';
+            counter++;
+        }
+    }
+
+    std::cout << "number of elements: " << counter << '\n';
+    data_file << '\n' << counter;
+
+    if (compare == true){
+
+        delete[] used_elems;
+    }
+}
+
+
 void generate_AVL_data(int argc, char** argv){
 
     bool* used_elems = nullptr;
@@ -230,6 +282,7 @@ void generate_Matrix_data(int argc, char** argv){
     }
 }
 
+
 void print_matrix(std::vector<int> matrix){
 
     int n = sqrt(matrix.size()); 
@@ -268,12 +321,7 @@ void test(){
 int main(int argc, char** argv){
     
     chdir("../outp");
-
-    bool compare = false;
-    bool* used_elems = nullptr;
-    std::ofstream data_file;
-    long range = DATA_RANGE, count_of_itter = NUM_OF_ITER, cur_num = 0, counter = 0;
-
+    
     if (argc > 1){
 
         if (argv[1] == std::string("test")){
@@ -302,51 +350,10 @@ int main(int argc, char** argv){
 
             argc--;
             argv = argv + 1;
-            compare = true;
+            generate_array(true, argc, argv);
+            exit(0);
         }
     }
 
-    if (argc > 3){
-
-        data_file.open(argv[1]);
-        range = atoi(argv[2]);
-        count_of_itter = atoi(argv[3]);
-    } else{
-
-        data_file.open("new_data.txt");
-    }
-
-    if (compare == true){
-
-        used_elems = new bool[range];
-    }
-
-    std::mt19937 mersenne(static_cast<unsigned int>(time(0))); 
-
-    for (int i = 0; i < count_of_itter; i++){
-
-        cur_num = mersenne() % range;
-
-        if (compare == true){
-
-            if (!used_elems[cur_num]){
-
-                data_file << cur_num << '\n';
-                counter++;
-                used_elems[cur_num] = true;
-            }
-        } else{
-
-            data_file << cur_num << ' ';
-            counter++;
-        }
-    }
-
-    std::cout << "number of elements: " << counter << '\n';
-    data_file << '\n' << counter;
-
-    if (compare == true){
-
-        delete[] used_elems;
-    }
+    generate_array(false, argc, argv);
 }
