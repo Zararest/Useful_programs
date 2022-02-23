@@ -5,13 +5,16 @@
 #include <string>
 #include <iomanip> 
 #include <unistd.h>
+#include <cassert>
+#include <set>
 
 #define DATA_RANGE 200
 #define NUM_OF_ITER 9000
 
 #define MATRIX_SIZE 20
 #define MATRIX_DETERM 2000
-#define NUM_OF_PERMUT 300
+#define NUM_OF_PERMUT 90000
+#define EXTRA_SIZE 3
 
 void generate_array(bool compare, int argc, char** argv){
 
@@ -50,7 +53,7 @@ void generate_array(bool compare, int argc, char** argv){
             }
         } else{
 
-            data_file << cur_num << ' ';
+            data_file << cur_num << '\n';
             counter++;
         }
     }
@@ -120,6 +123,7 @@ void generate_AVL_data(int argc, char** argv){
         }      
     }
 
+    delete[] used_elems;
     data_file.close();
 }
 
@@ -318,6 +322,168 @@ void test(){
     print_matrix(matrix);
 }
 
+
+void generate_Splay_find(int argc, char** argv){
+
+    bool* used_elems = nullptr;
+    std::ofstream data_file, req_file, ans_file;
+    std::string data_file_name, req_file_name, ans_file_name;
+
+    if (argc > 3){
+
+        data_file_name.append("input_");
+        data_file_name.append(argv[1]);
+
+        req_file_name.append("requests_");
+        req_file_name.append(argv[1]);
+
+        ans_file_name.append("ans_");
+        ans_file_name.append(argv[1]);
+
+        argc--;
+        argv = argv + 1;
+    } else{
+
+        data_file_name.append("input");
+        req_file_name.append("requests");
+        ans_file_name.append("ans");
+    }
+
+    data_file.open(data_file_name);
+    req_file.open(req_file_name);
+    ans_file.open(ans_file_name);
+
+    assert(data_file.is_open() && req_file.is_open() && ans_file.is_open());
+
+    if (argc <= 2){ std::cout << "Not enoght args" << std::endl; return;}
+
+    int num_of_elems = atoi(argv[1]);
+    int num_of_req = atoi(argv[2]);
+
+    int* arr_of_nums = new int[num_of_elems * EXTRA_SIZE];
+    std::set<int> new_set;
+    std::mt19937 mersenne(static_cast<unsigned int>(time(0))); 
+
+    for (int i = 0; i < num_of_elems * EXTRA_SIZE; i++){
+
+        arr_of_nums[i] = i;
+    }
+
+    for (int i = 0; i < NUM_OF_PERMUT; i++){
+
+        std::swap(arr_of_nums[mersenne() % (num_of_elems * EXTRA_SIZE)], arr_of_nums[mersenne() % (num_of_elems * EXTRA_SIZE)]);
+    }
+
+    for (int i = 0; i < num_of_elems; i++){
+
+        data_file << arr_of_nums[i] << std::endl;
+        new_set.insert(arr_of_nums[i]);
+    }
+
+    int cur_req = 0;
+
+    for (int i = 0; i < num_of_req; i++){
+
+        cur_req = mersenne() % (num_of_elems * 3);
+        req_file << cur_req << std::endl;
+        ans_file << (new_set.find(cur_req) != new_set.end()) << std::endl;
+    }
+
+    data_file.close();
+    req_file.close();
+    ans_file.close();
+
+    delete[] arr_of_nums;
+}   
+
+
+int get_number_of_elems_in_set(std::set<int>& cur_set, int from, int to){
+
+    int ret_val = 0;
+
+    for (int i = from; i <= to; i++){
+
+        if (cur_set.find(i) != cur_set.end()){ ret_val++; }
+    }
+
+    return ret_val;
+}
+
+void generate_Splay_range(int argc, char** argv){
+
+    bool* used_elems = nullptr;
+    std::ofstream data_file, req_file, ans_file;
+    std::string data_file_name, req_file_name, ans_file_name;
+
+    if (argc > 3){
+
+        data_file_name.append("input_");
+        data_file_name.append(argv[1]);
+
+        req_file_name.append("requests_");
+        req_file_name.append(argv[1]);
+
+        ans_file_name.append("ans_");
+        ans_file_name.append(argv[1]);
+
+        argc--;
+        argv = argv + 1;
+    } else{
+
+        data_file_name.append("input");
+        req_file_name.append("requests");
+        ans_file_name.append("ans");
+    }
+
+    data_file.open(data_file_name);
+    req_file.open(req_file_name);
+    ans_file.open(ans_file_name);
+
+    assert(data_file.is_open() && req_file.is_open() && ans_file.is_open());
+
+    if (argc <= 2){ std::cout << "Not enoght args" << std::endl; return;}
+
+    int num_of_elems = atoi(argv[1]);
+    int num_of_req = atoi(argv[2]);
+
+    int* arr_of_nums = new int[num_of_elems * EXTRA_SIZE];
+    std::set<int> new_set;
+    std::mt19937 mersenne(static_cast<unsigned int>(time(0))); 
+
+    for (int i = 0; i < num_of_elems * EXTRA_SIZE; i++){
+
+        arr_of_nums[i] = i;
+    }
+
+    for (int i = 0; i < NUM_OF_PERMUT; i++){
+
+        std::swap(arr_of_nums[mersenne() % (num_of_elems * EXTRA_SIZE)], arr_of_nums[mersenne() % (num_of_elems * EXTRA_SIZE)]);
+    }
+
+    for (int i = 0; i < num_of_elems; i++){
+
+        data_file << arr_of_nums[i] << std::endl;
+        new_set.insert(arr_of_nums[i]);
+    }
+
+    int cur_left_lim = 0, cur_right_lim = 0;
+
+    for (int i = 0; i < num_of_req; i++){
+
+        cur_left_lim = mersenne() % (num_of_elems * 2);
+        cur_right_lim = cur_left_lim + (mersenne() % num_of_elems);
+        req_file << cur_left_lim << ' ' << cur_right_lim << std::endl;
+        ans_file << get_number_of_elems_in_set(new_set , cur_left_lim, cur_right_lim) << std::endl;
+    }
+
+    data_file.close();
+    req_file.close();
+    ans_file.close();
+
+    delete[] arr_of_nums;
+}
+
+
 int main(int argc, char** argv){
     
     chdir("../outp");
@@ -351,6 +517,22 @@ int main(int argc, char** argv){
             argc--;
             argv = argv + 1;
             generate_array(true, argc, argv);
+            exit(0);
+        }
+
+        if (argv[1] == std::string("Splay_find")){
+
+            argc--;
+            argv = argv + 1;
+            generate_Splay_find(argc, argv);
+            exit(0);
+        }
+
+        if (argv[1] == std::string("Splay_number_of_elems")){
+
+            argc--;
+            argv = argv + 1;
+            generate_Splay_range(argc, argv);
             exit(0);
         }
     }
