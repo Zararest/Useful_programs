@@ -483,6 +483,108 @@ void generate_Splay_range(int argc, char** argv){
     delete[] arr_of_nums;
 }
 
+int get_elem(std::set<int>& cur_set, int num_of_elem){
+
+    std::set<int>::iterator iter = cur_set.begin();
+
+    for (int i = 0; i < num_of_elem; i++){
+
+        ++iter;
+    }
+
+    return *iter;
+}
+
+void generate_Splay_Gaus(int argc, char** argv){
+
+    std::ofstream data_file, req_file, ans_file;
+    std::string data_file_name, req_file_name, ans_file_name;
+
+    if (argc > 3){
+
+        data_file_name.append("input_");
+        data_file_name.append(argv[1]);
+
+        req_file_name.append("requests_");
+        req_file_name.append(argv[1]);
+
+        ans_file_name.append("ans_");
+        ans_file_name.append(argv[1]);
+
+        argc--;
+        argv = argv + 1;
+    } else{
+
+        data_file_name.append("input");
+        req_file_name.append("requests");
+        ans_file_name.append("ans");
+    }
+
+    data_file.open(data_file_name);
+    req_file.open(req_file_name);
+    ans_file.open(ans_file_name);
+
+    assert(data_file.is_open() && req_file.is_open() && ans_file.is_open());
+
+    if (argc <= 3){ std::cout << "Not enoght args" << std::endl; return;}
+
+    int num_of_elems = atoi(argv[1]);
+    int num_of_req = atoi(argv[2]);
+    double sigma = strtod(argv[3], nullptr);
+
+    int* arr_of_nums = new int[num_of_elems * EXTRA_SIZE];
+    std::set<int> new_set;
+    std::mt19937 mersenne(static_cast<unsigned int>(time(0))); 
+
+    for (int i = 0; i < num_of_elems * EXTRA_SIZE; i++){
+
+        arr_of_nums[i] = i;
+    }
+
+    for (int i = 0; i < NUM_OF_PERMUT; i++){
+
+        std::swap(arr_of_nums[mersenne() % (num_of_elems * EXTRA_SIZE)], arr_of_nums[mersenne() % (num_of_elems * EXTRA_SIZE)]);
+    } 
+
+    for (int i = 0; i < num_of_elems; i++){
+
+        data_file << arr_of_nums[i] << std::endl;
+        new_set.insert(arr_of_nums[i]);
+    }
+
+    int cur_median = 0, cur_size = 0;
+    int cur_left_lim = 0, cur_right_lim = 0;
+
+    std::normal_distribution<> normal_dist{num_of_elems / 2, sigma};
+
+    for (int i = 0; i < num_of_req; i++){
+
+        cur_median = normal_dist(mersenne);
+        cur_median = cur_median % (num_of_elems / 2);
+        cur_size = mersenne() % num_of_elems;
+
+        if (cur_median - cur_size < 0){
+
+            cur_left_lim = 0;
+        } else{
+            
+            cur_left_lim = get_elem(new_set, cur_median - cur_size);
+        }
+
+        if (cur_median + cur_size >= num_of_elems){
+            
+            cur_right_lim = get_elem(new_set, new_set.size() - 1);
+        } else{
+
+            cur_right_lim = get_elem(new_set, cur_median + cur_size);
+        }
+
+        req_file << cur_left_lim << ' ' << cur_right_lim << std::endl;
+        ans_file << get_number_of_elems_in_set(new_set , cur_left_lim, cur_right_lim) << std::endl;
+    }
+
+    delete[] arr_of_nums;
+}
 
 int main(int argc, char** argv){
     
@@ -533,6 +635,14 @@ int main(int argc, char** argv){
             argc--;
             argv = argv + 1;
             generate_Splay_range(argc, argv);
+            exit(0);
+        }
+
+        if (argv[1] == std::string("Splay_Gaus")){
+
+            argc--;
+            argv = argv + 1;
+            generate_Splay_Gaus(argc, argv);
             exit(0);
         }
     }
